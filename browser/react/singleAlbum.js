@@ -7,6 +7,7 @@ export default class singleAlbum extends Component{
 	}
 
 	render(){
+		const playing = this.props.playing;
 		return (
 			<div className="album">
 			  <div>
@@ -23,23 +24,25 @@ export default class singleAlbum extends Component{
 			      </tr>
 			    </thead>
 			    <tbody>
-	        	{this.props.album.songs.map((song) => {
+	        	{this.props.album.songs.map((song, index) => {
+							const currentSong = this.props.currentSong.id === song.id? true : false
 							return(	
-								<tr key={song.id}>
-					        <td>
-					          <button className="btn btn-default btn-xs">
-					            <span className="glyphicon glyphicon-play"></span>
-					          </button>
-					        </td>
-					        <td>{song.name}</td>
-					        <td>{song.artists.reduce((acc, artist) => {
-					        	 return acc += artist.name + ',';
-					        }, '').slice(0,-1)}</td>
-					        <td>{song.genre}</td>
-					      </tr>					      
-					     )
-	        		}
-	        	)}								
+								<tr key={song.id} className={currentSong ? 'active' : '' }>
+										<td>
+						          <button onClick={() => {this.props.play(song, index)} } className="btn btn-default btn-xs">
+						          	 <span className={currentSong && this.props.playing  ? "glyphicon glyphicon-pause" : "glyphicon glyphicon-play" }></span> 
+						          	
+						          </button>
+					         </td> 	
+						        <td>{song.name}</td>
+						        <td>{song.artists.reduce((acc, artist) => {
+						        	 return acc += artist.name + ',';
+						        }, '').slice(0,-1)}</td>
+						        <td>{song.genre}</td>
+					      </tr>
+							)
+      			}
+        	)}								
 			    </tbody>
 			  </table>
 			</div>
