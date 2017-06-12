@@ -18,7 +18,7 @@ const Footer = (props) => {
             </div>
             <div className="bar">
               <div className="progress">
-                <div className="progress-bar"></div>
+                <div className="progress-bar" style={{width: `${props.progress}%`}}></div>
               </div>
             </div> 
           </footer> : <span/>           

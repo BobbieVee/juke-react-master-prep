@@ -15,7 +15,8 @@ export default class Main extends React.Component{
 			selectedAlbum: {songs: []},
 			currentSong: {},
 			currentSongIndex: 0,
-			playing: false
+			playing: false,
+			progress: 0
 		};
 		this.handleClick = this.handleClick.bind(this);
 		this.returnToHome = this.returnToHome.bind(this);
@@ -32,21 +33,25 @@ export default class Main extends React.Component{
 		audio.addEventListener('ended', () => {
     	this.next(); 
   	});	
+  	audio.addEventListener('timeupdate', () => {
+  		this.setState({progress: 100 * audio.currentTime / audio.duration});	
+  	})
 	}
 
 	next() {
 		const length = this.state.selectedAlbum.songs.length;
 		const index = this.state.currentSongIndex;
 		const newIndex = (length - 1 === index) ? 0 : index + 1;
-		const song = this.state.selectedAlbum.songs[newIndex]
-		this.play(song, index);
-		console.log('state = ', this.state)
+		const song = this.state.selectedAlbum.songs[newIndex];
+		this.play(song, newIndex);
 	}
 
 	previous() {
-		const index = this.state.currentSongIndex - 1;
-		const song = this.state.selectedAlbum.songs[index]
-		this.play(song, index );
+		const length = this.state.selectedAlbum.songs.length;
+		const index = this.state.currentSongIndex;
+		const newIndex = ( 0 === index) ? length - 1  : index - 1;
+		const song = this.state.selectedAlbum.songs[newIndex]
+		this.play(song, newIndex);
 	}
 
 	handleClick(album) {
@@ -98,7 +103,15 @@ export default class Main extends React.Component{
 					  }	
     		  </div>
   		  </div>
-  		  <Footer next= {this.next} previous={this.previous} play={this.play} currentSong={this.state.currentSong} playing={this.state.playing}/>
+  		  
+  		  <Footer 	
+  		  	next= {this.next} 
+  		  	previous={this.previous} 
+  		  	play={this.play} 
+  		  	currentSong={this.state.currentSong} 
+  		  	playing={this.state.playing}
+  		  	progress={this.state.progress}
+  		  	/>
 			</div>
 		);
 
