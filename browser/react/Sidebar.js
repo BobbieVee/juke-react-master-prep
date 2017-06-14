@@ -1,16 +1,15 @@
 import React from 'react';
 
-const Sidebar = (props) => {
+export default (props) => {
 	return (
         <sidebar>
           <img src="juke.svg" className="logo" />
           <section>
             <h4 className="menu-item active">
-              <a onClick={() => props.albums()}>ALBUMS</a>
+              <a onClick={() => props.returnToHome()}>ALBUMS</a>
             </h4>
           </section>
         </sidebar>
 	)
 }
 
-export default Sidebar;

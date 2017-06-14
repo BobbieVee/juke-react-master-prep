@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Footer = (props) => {
+export default (props) => {
 	return (
     <div>  
         {props.currentSong.id?
@@ -29,5 +29,3 @@ const Footer = (props) => {
       
 	)
 };
-
-export default Footer;

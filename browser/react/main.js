@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Albums from './Albums';
 import SingleAlbum from './singleAlbum'
 import axios from 'axios';
+import Home from './home';
 const audio = document.createElement('audio');
 
 
@@ -12,17 +13,21 @@ export default class Main extends React.Component{
 		super();
 		this.state = {
 			albums: [],
-			selectedAlbum: {songs: []},
+			selectedAlbum: {id: 0, songs: []},
 			currentSong: {},
 			currentSongIndex: 0,
 			playing: false,
-			progress: 0
+			progress: 0, 
+			shuffle: false,
+			songsOrdered: [],
+			shuffleSongNumber: 0
 		};
 		this.handleClick = this.handleClick.bind(this);
 		this.returnToHome = this.returnToHome.bind(this);
 		this.play = this.play.bind(this);
 		this.previous = this.previous.bind(this);
 		this.next = this.next.bind(this);
+		this.shuffleToggle = this.shuffleToggle.bind(this);
 	}
 
 	componentDidMount() {
@@ -31,33 +36,60 @@ export default class Main extends React.Component{
 		.then(data => this.setState({albums: data}))
 		.catch(console.error.bind(console));
 		audio.addEventListener('ended', () => {
-    	this.next(); 
-  	});	
+    	this.next();})
   	audio.addEventListener('timeupdate', () => {
   		this.setState({progress: 100 * audio.currentTime / audio.duration});	
   	})
 	}
 
+	createShuffleArray() {		
+		let newArray = [];
+		const songs = this.state.selectedAlbum.songs;
+		const length= songs.length;
+
+		//make a copy of songs array
+		let tempArray = songs.slice();
+
+		// create a new Array randomly ordered from tempArray.
+		for(var i=0; i < length; i++ ) {
+			const random = Math.floor(Math.random() * (length - i));
+			newArray = newArray.concat(tempArray.splice(random));
+		}
+		return newArray;
+}
+
+	shuffleToggle(){
+		const shuffle = this.state.shuffle;
+		if (shuffle) {
+			this.play(this.state.selectedAlbum.songs[0], 0);
+			this.setState({songsOrdered: this.state.selectedAlbum.songs, shuffle: false})
+		} else {
+			const shuffledArray = this.createShuffleArray()
+			this.play(shuffledArray[0], 0)
+			this.setState({songsOrdered: shuffledArray, shuffle: true})
+		}
+	}
+
 	next() {
-		const length = this.state.selectedAlbum.songs.length;
+		const length = this.state.songsOrdered.length;
 		const index = this.state.currentSongIndex;
 		const newIndex = (length - 1 === index) ? 0 : index + 1;
-		const song = this.state.selectedAlbum.songs[newIndex];
+		const song = this.state.songsOrdered[newIndex];
 		this.play(song, newIndex);
 	}
 
 	previous() {
-		const length = this.state.selectedAlbum.songs.length;
+		const length = this.state.songsOrdered.length;
 		const index = this.state.currentSongIndex;
 		const newIndex = ( 0 === index) ? length - 1  : index - 1;
-		const song = this.state.selectedAlbum.songs[newIndex]
+		const song = this.state.songsOrdered[newIndex]
 		this.play(song, newIndex);
 	}
 
 	handleClick(album) {
 		axios.get(`/api/albums/${album.id}`)
 		.then(response => response.data)
-		.then(album => this.setState({selectedAlbum: album}))
+		.then(album => this.setState({selectedAlbum: album, songsOrdered: album.songs}))
 		.catch(console.error.bind(console));
 	}
 
@@ -66,9 +98,9 @@ export default class Main extends React.Component{
 	}
 
 	togglePlay(){
-			this.state.playing ? audio.pause() : audio.play();
-			this.setState((prevState) => {
-				return {playing: !prevState.playing}
+		this.state.playing ? audio.pause() : audio.play();
+		this.setState((prevState) => {
+			return {playing: !prevState.playing}
 		});
 	}
 
@@ -89,30 +121,23 @@ export default class Main extends React.Component{
 
 	render() {
 		return (
-			<div> 
-				<div id='main' className='container-fluid'>
-		      <div className="col-xs-2">
-		        <Sidebar albums={this.returnToHome}/>
-		      </div>
-					<div className="col-xs-10">
-						{this.state.selectedAlbum.id ? <SingleAlbum album={this.state.selectedAlbum} play={this.play} currentSong={this.state.currentSong} playing={this.state.playing}/> : 
-			  			<div className="albums">
-						    <h3>Albums</h3>
-						    <Albums albums={this.state.albums} handleClick={this.handleClick}/>
-					  	</div>
-					  }	
-    		  </div>
-  		  </div>
-  		  
-  		  <Footer 	
-  		  	next= {this.next} 
-  		  	previous={this.previous} 
-  		  	play={this.play} 
-  		  	currentSong={this.state.currentSong} 
-  		  	playing={this.state.playing}
-  		  	progress={this.state.progress}
-  		  	/>
-			</div>
+				<Home 
+	  		  	next= {this.next} 
+	  		  	previous={this.previous} 
+	  		  	play={this.play} 
+	  		  	currentSong={this.state.currentSong} 
+	  		  	playing={this.state.playing}
+	  		  	progress={this.state.progress}
+	  		  	play={this.play} 
+	  		  	currentSong={this.state.currentSong} 
+	  		  	playing={this.state.playing}
+	  		  	Albums albums={this.state.albums} 
+	  		  	handleClick={this.handleClick}
+	  		  	returnToHome={this.returnToHome}
+	  		  	selectedAlbum ={this.state.selectedAlbum}
+	  		  	shuffleToggle={this.shuffleToggle}
+	  		  	songsOrdered={this.state.songsOrdered}
+				/>
 		);
 
 	}
